@@ -1,0 +1,26 @@
+{
+  "name": "lenden-backend",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.16.0"
+  },
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js",
+    "migrate": "node scripts/migrate.js",
+    "seed": "node scripts/seed.js",
+    "test": "vitest run --maxWorkers=1 --no-file-parallelism"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "pg": "^8.13.1"
+  },
+  "devDependencies": {
+    "prettier": "^3.9.10",
+    "supertest": "^7.0.0",
+    "vitest": "^5.1.0"
+  }
+}
