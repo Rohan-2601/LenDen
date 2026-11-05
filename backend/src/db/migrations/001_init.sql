@@ -1,0 +1,17 @@
+CREATE TABLE IF NOT EXISTS clock (id int PRIMARY KEY CHECK(id=1), today date NOT NULL);
+CREATE TABLE IF NOT EXISTS customers (id serial PRIMARY KEY, name text NOT NULL, phone text UNIQUE NOT NULL, tier text NOT NULL, salesperson text NOT NULL, credit_terms int NOT NULL, stopped boolean NOT NULL DEFAULT false);
+CREATE TABLE IF NOT EXISTS invoices (id serial PRIMARY KEY, customer_id int NOT NULL REFERENCES customers(id), invoice_no text UNIQUE NOT NULL, amount numeric(12,2) NOT NULL CHECK(amount>0), paid_amount numeric(12,2) NOT NULL DEFAULT 0 CHECK(paid_amount>=0 AND paid_amount<=amount), issued_date date NOT NULL, due_date date NOT NULL, promise_date date, disputed boolean NOT NULL DEFAULT false, CHECK(due_date>=issued_date));
+CREATE TABLE IF NOT EXISTS orders (id serial PRIMARY KEY, customer_id int NOT NULL REFERENCES customers(id), order_date date NOT NULL, items jsonb NOT NULL, status text NOT NULL DEFAULT 'completed');
+CREATE TABLE IF NOT EXISTS outbox (id serial PRIMARY KEY, customer_id int NOT NULL REFERENCES customers(id), direction text NOT NULL DEFAULT 'outgoing', body text NOT NULL, kind text NOT NULL, status text NOT NULL DEFAULT 'sent' CHECK(status IN ('sent','delivered','read')), sent_date date NOT NULL);
+CREATE UNIQUE INDEX IF NOT EXISTS one_outgoing_daily ON outbox(customer_id,sent_date) WHERE direction='outgoing';
+CREATE TABLE IF NOT EXISTS stage_sends (invoice_id int REFERENCES invoices(id), stage text NOT NULL, sent_date date NOT NULL, PRIMARY KEY(invoice_id,stage));
+CREATE TABLE IF NOT EXISTS cases (id serial PRIMARY KEY, customer_id int NOT NULL REFERENCES customers(id), invoice_id int UNIQUE REFERENCES invoices(id), kind text NOT NULL, owner text NOT NULL, status text NOT NULL CHECK(status IN ('open','waiting','resolved','escalated')), created_date date NOT NULL);
+CREATE UNIQUE INDEX IF NOT EXISTS one_active_reorder ON cases(customer_id) WHERE kind='reorder' AND status!='resolved';
+CREATE TABLE IF NOT EXISTS case_events (id serial PRIMARY KEY, case_id int NOT NULL REFERENCES cases(id), event_date date NOT NULL, detail text NOT NULL);
+CREATE TABLE IF NOT EXISTS notifications (id serial PRIMARY KEY, customer_id int REFERENCES customers(id), case_id int REFERENCES cases(id), created_date date NOT NULL, body text NOT NULL);
+CREATE TABLE IF NOT EXISTS offers (id serial PRIMARY KEY, customer_id int NOT NULL REFERENCES customers(id), invoice_id int REFERENCES invoices(id), kind text NOT NULL, expires_date date NOT NULL, used boolean NOT NULL DEFAULT false, UNIQUE(customer_id,kind));
+CREATE TABLE IF NOT EXISTS payments (id serial PRIMARY KEY, invoice_id int NOT NULL REFERENCES invoices(id), amount numeric(12,2) NOT NULL CHECK(amount>0), payment_date date NOT NULL, discount numeric(12,2) NOT NULL DEFAULT 0);
+ALTER TABLE cases ADD COLUMN IF NOT EXISTS status_since date;
+UPDATE cases SET status_since=created_date WHERE status_since IS NULL;
+ALTER TABLE cases ALTER COLUMN status_since SET NOT NULL;
+CREATE TABLE IF NOT EXISTS reorder_sends (order_id int PRIMARY KEY REFERENCES orders(id), sent_date date NOT NULL, accepted boolean NOT NULL DEFAULT false);
