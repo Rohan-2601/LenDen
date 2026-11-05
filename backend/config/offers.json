@@ -1,0 +1,4 @@
+{
+  "early_payment": { "discountPercent": 2, "validDays": 3 },
+  "win_back": { "inactiveDays": 45, "validDays": 7, "coupon": "WELCOME-BACK" }
+}
