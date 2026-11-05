@@ -1,0 +1,29 @@
+{
+  "stages": [
+    {
+      "name": "pre_due",
+      "dayOffset": -2,
+      "template": "Hi {name}, friendly reminder: {invoice_no}, Rs {balance}, is due {due_date}."
+    },
+    {
+      "name": "due_day",
+      "dayOffset": 0,
+      "template": "Hi {name}, {invoice_no} is due today. Please pay Rs {balance}."
+    },
+    {
+      "name": "soft_followup",
+      "dayOffset": 3,
+      "template": "Hi {name}, {invoice_no} has Rs {balance} outstanding since {due_date}. Please pay today."
+    },
+    {
+      "name": "firm_followup",
+      "dayOffset": 7,
+      "template": "Hi {name}, please settle {invoice_no}: Rs {balance}. Your salesperson will follow up."
+    },
+    {
+      "name": "final_notice",
+      "dayOffset": 15,
+      "template": "Final reminder for {invoice_no}: Rs {balance} remains unpaid. Your account has been escalated to our manager."
+    }
+  ]
+}
